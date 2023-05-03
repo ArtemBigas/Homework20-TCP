@@ -4,32 +4,33 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+//#include <cstring>
 using namespace std;
 
-#define MESSAGE_LENGTH 1024 // Максимальный размер буфера для данных в байтах, максимальный размер сообщения. tCP позволяет 1640
-#define PORT 7777 // Будем использовать этот номер порта
+#define MESSAGE_LENGTH 1024 // РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° РґР»СЏ РґР°РЅРЅС‹С… РІ Р±Р°Р№С‚Р°С…, РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЃРѕРѕР±С‰РµРЅРёСЏ. tCP РїРѕР·РІРѕР»СЏРµС‚ 1640
+#define PORT 7777 // Р‘СѓРґРµРј РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ СЌС‚РѕС‚ РЅРѕРјРµСЂ РїРѕСЂС‚Р°
 
-inline int socket_file_descriptor, connection;//инициализация Сокета
-inline struct sockaddr_in serveraddress, client; //Структура для обработки адреса сетевого взаимодействия
+inline int socket_file_descriptor, connection;//РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РЎРѕРєРµС‚Р°
+inline struct sockaddr_in serveraddress, client; //РЎС‚СЂСѓРєС‚СѓСЂР° РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё Р°РґСЂРµСЃР° СЃРµС‚РµРІРѕРіРѕ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ
 
 
 int MakeSockert()
 {
-    // Создадим сокет
-    socket_file_descriptor = socket(AF_INET, SOCK_STREAM, 0);//AF_INET - IPv4, SOCK_STREAM - то что TCP, 0 - протокол по умолчанию
+    // РЎРѕР·РґР°РґРёРј СЃРѕРєРµС‚
+    socket_file_descriptor = socket(AF_INET, SOCK_STREAM, 0);//AF_INET - IPv4, SOCK_STREAM - С‚Рѕ С‡С‚Рѕ TCP, 0 - РїСЂРѕС‚РѕРєРѕР» РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 
     if (socket_file_descriptor == -1) {
         cout << "Creation of Socket failed!" << endl;
         return socket_file_descriptor;
     }
 
-    // Установим адрес сервера
-    serveraddress.sin_addr.s_addr = inet_addr("127.0.0.1");//вводим ip сервера, в данном случае локального
-    // Зададим номер порта
+    // РЈСЃС‚Р°РЅРѕРІРёРј Р°РґСЂРµСЃ СЃРµСЂРІРµСЂР°
+    serveraddress.sin_addr.s_addr = inet_addr("127.0.0.1");//РІРІРѕРґРёРј ip СЃРµСЂРІРµСЂР°, РІ РґР°РЅРЅРѕРј СЃР»СѓС‡Р°Рµ Р»РѕРєР°Р»СЊРЅРѕРіРѕ
+    // Р—Р°РґР°РґРёРј РЅРѕРјРµСЂ РїРѕСЂС‚Р°
     serveraddress.sin_port = htons(PORT);
-    // Используем IPv4
+    // РСЃРїРѕР»СЊР·СѓРµРј IPv4
     serveraddress.sin_family = AF_INET;
-    // Установим соединение с сервером
+    // РЈСЃС‚Р°РЅРѕРІРёРј СЃРѕРµРґРёРЅРµРЅРёРµ СЃ СЃРµСЂРІРµСЂРѕРј
     connection = connect(socket_file_descriptor, (struct sockaddr*)&serveraddress, sizeof(serveraddress));
     if (connection == -1) {
         cout << "Connection with the server failed.!" << endl;
@@ -40,7 +41,7 @@ struct Person
 {
     string login;
     string password;
- 
+
     Person(string login_, string password_) : login(login_), password(password_) {}
 };
 
@@ -69,41 +70,41 @@ void Registration(vector<Person>& A, string login_, string password_)
                 throw "The same login is already registered!";
             }
         }
-
-        std::vector<char> chars(login_.begin(), login_.end());//преобразование string в Char
-        chars.push_back('\0');
-
-        char* LogChar = &chars[0];
-
-
-        ssize_t bytes = write(socket_file_descriptor, LogChar, sizeof(LogChar));
-         //Если передали >= 0  байт, значит пересылка прошла успешно
-          if (bytes >= 0) {
+         
+        ssize_t bytes = write(socket_file_descriptor, login_.c_str(), login_.size());
+        //Р•СЃР»Рё РїРµСЂРµРґР°Р»Рё >= 0  Р±Р°Р№С‚, Р·РЅР°С‡РёС‚ РїРµСЂРµСЃС‹Р»РєР° РїСЂРѕС€Р»Р° СѓСЃРїРµС€РЅРѕ
+        //char* LogChar;
+        //LogChar = strcpy(new char[login_.length() + 1], login_.c_str());
+        //ssize_t bytes = write(socket_file_descriptor, LogChar, sizeof(LogChar));
+        if (bytes >= 0) {
             cout << "Login send to the server successfully.!" << endl;
-          };
-        write(socket_file_descriptor, LogChar, sizeof(LogChar));
+        };
+        //write(socket_file_descriptor, login_.c_str(), login_.size());
+        //write(socket_file_descriptor, LogChar, sizeof(LogChar));
         cout << endl;
-
+        
 
         cout << "Enter the Password: ";
         cin >> password_;
 
-        //std::vector<char> chars(password_.begin(), password_.end());//преобразование string в Char
-        //chars.push_back('\0');
-
-        //char* PassChar = &chars[0];
-
-        //ssize_t bytes = write(socket_file_descriptor, PassChar, sizeof(PassChar));
-        // Если передали >= 0  байт, значит пересылка прошла успешно
-        //if (bytes >= 0) {
-         //   cout << "Password send to the server successfully.!" << endl;
-       // };
-       // write(socket_file_descriptor, PassChar, sizeof(PassChar));
         cout << endl;
 
-        A.emplace_back(login_, password_);
+        bytes = write(socket_file_descriptor, password_.c_str(), password_.size());
+        //char* PassChar;
+        //PassChar = strcpy(new char[password_.length() + 1], password_.c_str());
+        //bytes = write(socket_file_descriptor, PassChar, sizeof(PassChar));
+        if (bytes >= 0) {
+            cout << "Login send to the server successfully.!" << endl;
+        };
+        //write(socket_file_descriptor, password_.c_str(), password_.size());
+        //write(socket_file_descriptor, PassChar, sizeof(PassChar));
+        cout << endl;
         
-            
+        cout << endl;
+        cout << login_ << endl << password_;//РІС‹РІРѕРґ РѕС‚РїСЂР°РІР»СЏРµРјС‹С… РґР°РЅРЅС‹С…
+        
+         A.emplace_back(login_, password_);
+
     }
     catch (const char* exception)
     {
@@ -116,14 +117,15 @@ void Registration(vector<Person>& A, string login_, string password_)
 
 int main()
 {
-
-    std::vector<Person> User;//массив для хранения логина и пароля
     
+    std::vector<Person> User;//РјР°СЃСЃРёРІ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ Р»РѕРіРёРЅР° Рё РїР°СЂРѕР»СЏ
+
     string Log;
     string Pass;
 
-    if (MakeSockert()!=-1)
-    Registration(User, Log,  Pass);
-   
+    if (MakeSockert() != -1)
+        Registration(User, Log, Pass);
+    cin >> Log;
+
     return 0;
 };

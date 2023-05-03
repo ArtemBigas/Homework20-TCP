@@ -70,24 +70,27 @@ public:
 };
 void GetLogAndPass(vector<Person>& A, string login_, string password_) // Прием от Клиента регистрационных данных
 {
-    char* LogChar;
-    char* PassChar;
-    read(connection, LogChar, sizeof(LogChar));
-    cout << "Login received from client: " << LogChar << endl;
-   // read(connection, PassChar, sizeof(PassChar));
-    //cout << "Password received from client: " << PassChar << endl;
     
-    string L(LogChar, sizeof(LogChar));     //Конвертация Char в String
-    string P(PassChar, sizeof(PassChar));
-    login_ = L;
-    password_ = P;
-   
+    std::string output(MESSAGE_LENGTH, 0);
+    read(connection, &output[0], MESSAGE_LENGTH - 1);
+    cout << "Login received from client: " << output << endl;
+    //string someLogin(output, sizeof(output));
+    login_ = output;
+
+    read(connection, &output[0], MESSAGE_LENGTH - 1);
+    cout << "Password received from client: " << output << endl;
+    //string somePassword(output, sizeof(output));
+    password_ = output;
+    
     A.emplace_back(login_, password_); // запись зарегистрированного клиента на сервере
 };
 void Registration(vector<Person>& A, string login_, string password_)
 {
     cout << "Registration stage" << endl;
-
+    for (int i = 0; i < A.size(); i++)
+    {
+        cout << A[i].login << endl;
+    };
     cout << "Enter your Username: ";
     cin >> login_;
     try
@@ -107,9 +110,18 @@ void Registration(vector<Person>& A, string login_, string password_)
         cin >> password_;
 
         cout << endl;
-
+        for (int i = 0; i < A.size(); i++)
+        {
+            if (login_ == A[i].login)
+            {
+                throw "The same login is already registered!";
+            }
+        }
         A.emplace_back(login_, password_);
-
+        for (int i = 0; i < A.size(); i++)// вывод всех логинов в массиве A.login
+        {
+            cout << A[i].login << endl;
+        };
 
     }
     catch (const char* exception)
@@ -120,18 +132,26 @@ void Registration(vector<Person>& A, string login_, string password_)
     }
 
 }
+void All(vector<Person>& A, string login_, string password_)
+{
+    MakeSockert();
+    GetLogAndPass(A, login_, password_);
+    while (true)
+    {
+        Registration(A, login_, password_);
+    };
+};
 
 int main()
 {
-
+    
     std::vector<Person> User;//массив для хранения логина и пароля
 
     string Log;
     string Pass;
 
-    MakeSockert();
-    GetLogAndPass(User, Log, Pass);
-    Registration(User, Log, Pass);
-
+    All(User, Log, Pass);
+      
+    cin >> Log;
     return 0;
 };
